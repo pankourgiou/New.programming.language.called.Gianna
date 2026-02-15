@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gianna Language 🌸</title>
+
+<style>
+body{
+  font-family: system-ui, Arial;
+  background:#0f172a;
+  color:#e2e8f0;
+  padding:20px;
+}
+
+h1{margin-bottom:6px}
+
+textarea{
+  width:100%;
+  height:220px;
+  background:#020617;
+  color:#e2e8f0;
+  border:1px solid #334155;
+  border-radius:10px;
+  padding:12px;
+  font-family:monospace;
+  font-size:14px;
+}
+
+.output{
+  margin-top:10px;
+  background:#020617;
+  border:1px solid #334155;
+  border-radius:10px;
+  padding:12px;
+  min-height:140px;
+  white-space:pre-wrap;
+  font-family:monospace;
+}
+
+button{
+  margin-top:10px;
+  margin-right:8px;
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  background:#2563eb;
+  color:white;
+  font-weight:600;
+}
+
+button:hover{background:#1d4ed8}
+
+.helper{
+  margin-top:12px;
+  background:#020617;
+  border:1px solid #334155;
+  border-radius:10px;
+  padding:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🌸 Gianna Language Playground</h1>
+<p>A playful mini programming language in your browser.</p>
+
+<textarea id="code" placeholder="Write Gianna code here..."></textarea>
+
+<br>
+<button onclick="runCode()">▶ Run</button>
+<button onclick="showHelper()">❓ Helper</button>
+<button onclick="showExamples()">✨ Examples</button>
+<button onclick="clearOutput()">🧹 Clear</button>
+
+<div class="output" id="output"></div>
+<div class="helper" id="helper" style="display:none"></div>
+
+<script>
+let vars = {};
+
+function out(text){
+  document.getElementById("output").innerText += text + "\n";
+}
+
+function clearOutput(){
+  document.getElementById("output").innerText="";
+}
+
+function runCode(){
+  clearOutput();
+  vars = {};
+
+  const lines = document.getElementById("code").value.split("\n");
+
+  for(let line of lines){
+    line = line.trim();
+    if(!line) continue;
+
+    // let variable
+    if(line.startsWith("let ")){
+      let parts = line.substring(4).split("=");
+      if(parts.length===2){
+        let name = parts[0].trim();
+        let value = parts[1].trim();
+        if(!isNaN(value)) value = Number(value);
+        vars[name]=value;
+      }
+      continue;
+    }
+
+    // special loop print
+    // syntax: repeat 5 print(hello)
+    if(line.startsWith("repeat ")){
+      try{
+        let rest = line.substring(7).trim();
+        let num = rest.split(" ")[0];
+        let command = rest.substring(num.length).trim();
+        num = parseInt(num);
+
+        for(let i=0;i<num;i++){
+          executePrint(command, i);
+        }
+      }catch{
+        out("Error in repeat loop.");
+      }
+      continue;
+    }
+
+    // print
+    if(line.startsWith("print")){
+      executePrint(line);
+      continue;
+    }
+
+    out("Unknown command: " + line);
+  }
+}
+
+function executePrint(line, i=0){
+  let inside = line.match(/print\((.*)\)/);
+  if(!inside){
+    out("Syntax error in print.");
+    return;
+  }
+
+  let value = inside[1].trim();
+
+  // loop special token
+  if(value === "#"){
+    out(i);
+    return;
+  }
+
+  // variable
+  if(vars[value]!==undefined){
+    out(vars[value]);
+    return;
+  }
+
+  // number
+  if(!isNaN(value)){
+    out(value);
+    return;
+  }
+
+  // text
+  out(value);
+}
+
+function showHelper(){
+  let h = document.getElementById("helper");
+  h.style.display = "block";
+  h.innerHTML = `
+<b>Gianna Language Helper 🌸</b><br><br>
+<b>Commands:</b><br>
+let x = 5 → create variable<br>
+print(x) → print variable<br>
+print(hello) → print text<br>
+print(123) → print number<br><br>
+<b>Special loop:</b><br>
+repeat 5 print(hello)<br>
+repeat 5 print(#) → prints counter 0..4<br>
+`;
+}
+
+function showExamples(){
+  document.getElementById("code").value =
+`print(Welcome to Gianna 🌸)
+
+let x = 7
+print(x)
+
+repeat 5 print(Hello!)
+
+repeat 5 print(#)`;
+}
+</script>
+
+</body>
+</html>
